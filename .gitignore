@@ -1,3 +1,7 @@
+# Input Files
+input*
+output*
+
 # History files
 .Rhistory
 .Rapp.history
