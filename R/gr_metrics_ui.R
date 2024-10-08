@@ -14,8 +14,16 @@ tab1_ui <- function(id) {
                downloadButton(ns("download_files"), "Download Files")
       ),
       tabPanel("Generate Graph",
-               actionButton(ns("generate_graph"), "Generate and Save Graph"),
-               plotOutput(ns("plot"))
+               uiOutput(ns("agent_selector_graph")),  # Dynamic UI for agent selection
+               actionButton(ns("generate_individual_graphs"), "Generate Individual Agent Graphs"),
+               actionButton(ns("generate_combined_graph"), "Generate Combined Agent Graph")
+               #plotOutput(ns("plot"))
+      ),
+      tabPanel("Display GR Values",
+               uiOutput(ns("agent_selector_display")),  # Dynamic UI for agent selection
+               actionButton(ns("display_gr_values"), "Displan GR Values for Agent"),
+               tableOutput(ns("gr_metrics_table")),  # Table to display the GR metrics
+               actionButton(ns("copy_to_clipboard"), "Copy to Clipboard")  # Add copy button
       )
     )
   )

@@ -1,24 +1,39 @@
-library(shiny)
-library(openxlsx)
-library(GRmetrics)
-source("custom_plot_functions.R")
-
 tab1_server <- function(input, output, session) {
-  ns <- session$ns
+  
+  # Reactive expression to read the uploaded file
+  reactive_data <- reactive({
+    req(input$file)  # Ensure the file is uploaded
+    df <- read.xlsx(input$file$datapath)  # Read the Excel file
+    df  # Return the dataframe
+  })
+  
+  # Dynamic UI for agent selection in "Generate Graph" tab
+  output$agent_selector_graph <- renderUI({
+    df <- reactive_data()  # Get the uploaded data
+    agents <- unique(df$agent)  # Get the unique agents from the data
+    checkboxGroupInput(session$ns("selected_agents_graph"), "Select Agents", choices = agents)
+  })
+  
+  # Dynamic UI for agent selection in "Display GR Values" tab
+  output$agent_selector_display <- renderUI({
+    df <- reactive_data()  # Get the uploaded data
+    agents <- unique(df$agent)  # Get the unique agents from the data
+    radioButtons(session$ns("selected_agents_display"), "Select Agent:", choices = agents)
+  })
   
   observeEvent(input$generate_files, {
     req(input$file)  # Ensure a file is selected
     
+    df <- read.xlsx(input$file$datapath)
+    output_dir <- input$output_folder_directory
+    
     process_files <- function() {
       tryCatch({
-        df <- read.xlsx(input$file$datapath)
-        drc_output <- GRfit(df, groupingVariables = c('cell_line', 'agent'))
-        
-        output_dir <- input$output_folder_directory
-        
         if (!dir.exists(output_dir)) {
           dir.create(output_dir, recursive = TRUE)
         }
+        
+        drc_output = GRfit(df, groupingVariables = c('cell_line','agent'))
         
         # Save GR metrics parameter table as Excel if requested
         if (input$save_gr_metrics_xlsx) {
@@ -59,32 +74,37 @@ tab1_server <- function(input, output, session) {
     process_files()
   })
   
-  observeEvent(input$generate_graph, {
-    req(input$file)  # Ensure a file is selected
+  # Function to generate and save individual graphs
+  observeEvent(input$generate_individual_graphs, {
+    req(input$file, input$selected_agents_graph)  # Ensure a file and selected agents are available
     
-    process_graphs <- function() {
+    df <- read.xlsx(input$file$datapath)
+    selected_agents <- input$selected_agents_graph
+    output_dir <- input$output_folder_directory
+    
+    
+    process_individual_graphs <- function() {
       tryCatch({
-        df <- read.xlsx(input$file$datapath)
-        drc_output <- GRfit(df, groupingVariables = c('cell_line', 'agent'))
-        
-        output_dir <- input$output_folder_directory
-        
         if (!dir.exists(output_dir)) {
           dir.create(output_dir, recursive = TRUE)
         }
         
-        p <- customPlotGR(drc_output)
-        
-        output$plot <- renderPlot({
-          print(p)  # Print the plot object to render it in Shiny
-        }, height = 600, width = 800)
-        
-        plot_filepath <- file.path(output_dir, "agent.png")
-        ggsave(plot_filepath, plot = p, width = 16, height = 12, dpi = 300)  # Save the plot
+        # Save each plot as a separate file for each selected agent
+        for (sel_agent in selected_agents) {
+          # Filter data based on selected agents
+          filtered_df <- df[df$agent %in% sel_agent, ]
+          agent_drc <- GRfit(filtered_df, groupingVariables = c('cell_line', 'agent'))
+          p <- customPlotGR(agent_drc)
+          
+          # Save individual plot
+          plot_filepath <- file.path(output_dir, paste0(sel_agent, ".png"))
+          message("Saving plot for: ", sel_agent)
+          ggsave(plot_filepath, plot = p, width = 16, height = 12, dpi = 300)
+        }
         
         showModal(modalDialog(
           title = "Success",
-          paste("Graph has been saved in", output_dir)
+          paste("Individual graphs have been saved in", output_dir)
         ))
         
       }, error = function(e) {
@@ -95,6 +115,91 @@ tab1_server <- function(input, output, session) {
       })
     }
     
-    process_graphs()
+    process_individual_graphs()
+  })
+  
+  # Function to generate and save combined graph
+  observeEvent(input$generate_combined_graph, {
+    
+    req(input$file, input$selected_agents_graph)  # Ensure a file and selected agents are available
+    
+    df <- read.xlsx(input$file$datapath)
+    selected_agents <- input$selected_agents_graph
+    output_dir <- input$output_folder_directory
+    
+    # Filter data based on selected agents
+    filtered_df <- df[df$agent %in% selected_agents, ]
+    
+    process_combined_graph <- function() {
+      tryCatch({
+        if (!dir.exists(output_dir)) {
+          dir.create(output_dir, recursive = TRUE)
+        }
+        browser()
+        # Fit the model for all selected agents
+        drc <- GRfit(filtered_df, groupingVariables = c('cell_line', 'agent'))
+        p <- customPlotGR(drc)
+        
+        # Generate a single plot for all agents
+        #output$plot <- renderPlot({
+        #  p  # Render the combined plot in Shiny
+        #}, height = 600, width = 800)
+        
+        # Save the combined plot
+        combined_plot_filepath <- file.path(output_dir, paste0(paste(selected_agents, collapse = "_"), ".png"))
+        print(p)
+        ggsave(combined_plot_filepath, plot = p, width = 16, height = 12, dpi = 300)
+        
+        showModal(modalDialog(
+          title = "Success",
+          paste("Combined graph has been saved in", output_dir)
+        ))
+        
+      }, error = function(e) {
+        showModal(modalDialog(
+          title = "Error",
+          paste("An error occurred:", e$message)
+        ))
+      })
+    }
+    
+    process_combined_graph()
+  })
+  
+  # Inside your server function (assuming tab1_server or wherever you handle it)
+  observeEvent(input$display_gr_values, {
+    req(input$file, input$selected_agents_display)   # Ensure an agent is selected
+    browser()
+    # Get the selected agent
+    selected_agent <- input$selected_agents_display
+    
+    df <- read.xlsx(input$file$datapath)
+    drc_output = GRfit(df, groupingVariables = c('cell_line','agent'))
+    
+    # Calculate GR metrics using GRgetMetrics function
+    gr_metrics <- GRgetMetrics(drc_output)  # assuming drc_output() returns the necessary data
+    
+    # Filter the metrics for the selected agent
+    filtered_metrics <- gr_metrics[gr_metrics$agent == selected_agent, ]
+    
+    # Define a custom formatting function
+    format_number <- function(x) {
+      if (abs(x) < 1e10) {
+        return(format(x, nsmall = 2))  # Normal format with two decimal places
+      } else {
+        return(format(x, scientific = TRUE, digits = 4))  # Scientific format
+      }
+    }
+    
+    # Render the table with the relevant columns and apply formatting
+    output$gr_metrics_table <- renderTable({
+      # Apply formatting to the numeric columns
+      filtered_metrics$GR50 <- sapply(filtered_metrics$GR50, format_number)
+      filtered_metrics$GR_AOC <- sapply(filtered_metrics$GR_AOC, format_number)
+      filtered_metrics$AUC <- sapply(filtered_metrics$AUC, format_number)
+      
+      # Return the formatted table
+      filtered_metrics[, c("cell_line", "GR50", "GR_AOC", "AUC")]
+    })
   })
 }

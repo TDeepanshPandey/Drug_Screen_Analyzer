@@ -1,6 +1,7 @@
 # Input Files
 input*
 output*
+.vscode
 
 # History files
 .Rhistory

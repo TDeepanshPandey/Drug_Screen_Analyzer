@@ -1,5 +1,5 @@
 # List of required packages
-required_packages <- c("shiny", "openxlsx", "GRmetrics")
+required_packages <- c("shiny", "openxlsx", "GRmetrics", "ggplot2")
 
 # Function to check and install missing packages
 install_if_missing <- function(packages) {
@@ -25,10 +25,12 @@ if (!require("GRmetrics", quietly = TRUE)) {
 library(shiny)
 library(openxlsx)
 library(GRmetrics)
+library(ggplot2)
 
 # Source the UI and server logic for the tab
 source("R/gr_metrics_ui.R")
 source("R/gr_metrics_server.R")
+source("R/custom_plot_functions.R")
 
 # Main UI
 ui <- fluidPage(
