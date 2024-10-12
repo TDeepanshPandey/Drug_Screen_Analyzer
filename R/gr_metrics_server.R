@@ -135,7 +135,6 @@ tab1_server <- function(input, output, session) {
         if (!dir.exists(output_dir)) {
           dir.create(output_dir, recursive = TRUE)
         }
-        browser()
         # Fit the model for all selected agents
         drc <- GRfit(filtered_df, groupingVariables = c('cell_line', 'agent'))
         p <- customPlotGR(drc)
@@ -169,7 +168,6 @@ tab1_server <- function(input, output, session) {
   # Inside your server function (assuming tab1_server or wherever you handle it)
   observeEvent(input$display_gr_values, {
     req(input$file, input$selected_agents_display)   # Ensure an agent is selected
-    browser()
     # Get the selected agent
     selected_agent <- input$selected_agents_display
     
