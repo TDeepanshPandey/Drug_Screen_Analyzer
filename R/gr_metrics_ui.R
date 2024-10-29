@@ -4,6 +4,31 @@ library(shiny)
 tab1_ui <- function(id) {
   ns <- NS(id)
   tagList(
+    # Head section with the clipboard handling JavaScript
+    tags$head(
+      tags$script(HTML("
+        Shiny.addCustomMessageHandler('copy_table', function(tableText) {
+          // Create a temporary textarea element
+          var textarea = document.createElement('textarea');
+          textarea.value = tableText;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          alert('Full Table Copied!');
+        });
+        
+        // Function to copy individual row
+        function copyRow(rowText) {
+          var textarea = document.createElement('textarea');
+          textarea.value = rowText;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        }
+      "))
+    ),
     fileInput(ns("file"), "Choose Excel File", multiple = FALSE, accept = c(".xlsx")),
     textInput(ns("output_folder_directory"), "Output Folder Directory", "output"),
     tabsetPanel(
@@ -22,9 +47,10 @@ tab1_ui <- function(id) {
       tabPanel("Display GR Values",
                uiOutput(ns("agent_selector_display")),  # Dynamic UI for agent selection
                actionButton(ns("display_gr_values"), "Displan GR Values for Agent"),
-               tableOutput(ns("gr_metrics_table")),  # Table to display the GR metrics
-               actionButton(ns("copy_to_clipboard"), "Copy to Clipboard")  # Add copy button
-      )
+               actionButton(ns("copy_to_clipboard"), "Copy Entire Table"),  # Add copy button
+               DTOutput(ns("gr_metrics_table"))  # Table to display the GR metrics
+               
+      ),
     )
   )
 }

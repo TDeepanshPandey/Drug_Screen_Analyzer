@@ -1,5 +1,5 @@
 # List of required packages
-required_packages <- c("shiny", "openxlsx", "GRmetrics", "ggplot2")
+required_packages <- c("shiny", "openxlsx", "GRmetrics", "ggplot2", "DT")
 
 # Function to check and install missing packages
 install_if_missing <- function(packages) {

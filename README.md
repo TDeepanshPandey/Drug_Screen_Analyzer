@@ -2,7 +2,7 @@
 
 Drug Screen Analyzer tool uses GR Metrics Library (<https://www.bioconductor.org/packages/release/bioc/html/GRmetrics.html>). This tool expects the file to be in Case A format. An example I have attached in the data folder.
 
-**Note-The column is called agent not treatment. In case you download the example from http://www.grcalculator.org/grcalculator/
+**Note-The column is called agent not treatment. In case you download the example from http://www.grcalculator.org/grcalculator/**
 
 ### GR Metrics and GR Values 
 

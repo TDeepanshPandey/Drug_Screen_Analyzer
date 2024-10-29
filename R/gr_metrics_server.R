@@ -7,6 +7,9 @@ tab1_server <- function(input, output, session) {
     df  # Return the dataframe
   })
   
+  # Create a reactive value to store filtered metrics
+  filtered_metrics <- reactiveVal(NULL)
+  
   # Dynamic UI for agent selection in "Generate Graph" tab
   output$agent_selector_graph <- renderUI({
     df <- reactive_data()  # Get the uploaded data
@@ -178,7 +181,10 @@ tab1_server <- function(input, output, session) {
     gr_metrics <- GRgetMetrics(drc_output)  # assuming drc_output() returns the necessary data
     
     # Filter the metrics for the selected agent
-    filtered_metrics <- gr_metrics[gr_metrics$agent == selected_agent, ]
+    filtered <- gr_metrics[gr_metrics$agent == selected_agent, ]
+    
+    # Store the filtered metrics in the reactive value
+    filtered_metrics(filtered)
     
     # Define a custom formatting function
     format_number <- function(x) {
@@ -189,15 +195,32 @@ tab1_server <- function(input, output, session) {
       }
     }
     
-    # Render the table with the relevant columns and apply formatting
-    output$gr_metrics_table <- renderTable({
-      # Apply formatting to the numeric columns
-      filtered_metrics$GR50 <- sapply(filtered_metrics$GR50, format_number)
-      filtered_metrics$GR_AOC <- sapply(filtered_metrics$GR_AOC, format_number)
-      filtered_metrics$AUC <- sapply(filtered_metrics$AUC, format_number)
-      
-      # Return the formatted table
-      filtered_metrics[, c("cell_line", "GR50", "GR_AOC", "AUC")]
+    filtered$GR50 <- sapply(filtered$GR50, format_number)
+    filtered$GR_AOC <- sapply(filtered$GR_AOC, format_number)
+    filtered$AUC <- sapply(filtered$AUC, format_number)
+    
+    # Render DataTable with individual copy buttons
+    output$gr_metrics_table <- renderDT({
+      filtered$Copy <- sapply(1:nrow(filtered), function(i) {
+        row_text <- paste(filtered[i, c("cell_line", "GR50", "GR_AOC", "AUC")], collapse = "\t")
+        sprintf('<button onclick="copyRow(`%s`)">Copy</button>', row_text)
+      })
+      datatable(
+        filtered[, c("cell_line", "GR50", "GR_AOC", "AUC", "Copy")],
+        escape = FALSE, rownames = FALSE,
+        options = list(dom = 't', paging = FALSE, ordering = FALSE)
+      )
     })
   })
+  
+  # Copy entire table to clipboard
+  observeEvent(input$copy_to_clipboard, {
+    req(filtered_metrics())  # Ensure the table is rendered
+    df <- isolate(filtered_metrics())  # Use isolate to avoid reactivity issues
+    table_text <- paste(apply(df[, c("cell_line", "GR50", "GR_AOC", "AUC")], 1, function(row) paste(row, collapse = "\t")), collapse = "\n")
+    session$sendCustomMessage("copy_table", table_text)
+  })
+  
+  # Add JavaScript for copying individual rows
+  session$sendCustomMessage("setup_row_copy", NULL)
 }
