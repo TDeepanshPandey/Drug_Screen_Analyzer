@@ -208,6 +208,7 @@ tab1_server <- function(input, output, session) {
       datatable(
         filtered[, c("cell_line", "GR50", "GR_AOC", "AUC", "Copy")],
         escape = FALSE, rownames = FALSE,
+        selection = 'none',
         options = list(dom = 't', paging = FALSE, ordering = FALSE)
       )
     })
