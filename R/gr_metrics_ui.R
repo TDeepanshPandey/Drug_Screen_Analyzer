@@ -46,7 +46,7 @@ tab1_ui <- function(id) {
       ),
       tabPanel("Display GR Values",
                uiOutput(ns("agent_selector_display")),  # Dynamic UI for agent selection
-               actionButton(ns("display_gr_values"), "Displan GR Values for Agent"),
+               actionButton(ns("display_gr_values"), "Display GR Values for Agent"),
                actionButton(ns("copy_to_clipboard"), "Copy Entire Table"),  # Add copy button
                DTOutput(ns("gr_metrics_table"))  # Table to display the GR metrics
                

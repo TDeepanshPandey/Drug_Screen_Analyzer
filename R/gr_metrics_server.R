@@ -1,3 +1,5 @@
+library(DT)  
+
 tab1_server <- function(input, output, session) {
   
   # Reactive expression to read the uploaded file
