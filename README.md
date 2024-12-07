@@ -8,11 +8,13 @@ The Drug Screen Analyzer tool uses the GR Metrics Library [Biocondutor GR Metric
 
 You can select the input file and output directory. Then select the checkbox for the file you want. Click the button and files will be generated in the output directory.
 ![Screenshot](https://github.com/TDeepanshPandey/Drug_Screen_Analyzer/blob/main/screenshot/generate_excel_files.png)
+![Screenshot](https://github.com/TDeepanshPandey/Drug_Screen_Analyzer/blob/main/screenshot/gr_metrics_excel.png)
 
 ### Graphs
 
 You can select the "Generate Graph" tab and it will automatically show the agents name. You can select multiple checkboxes and select option "Generate Individual Agent Graphs" to generate graphs per agent or "Generate Combined Agent Graph" to make one graph for selected agents.
 ![Screenshot](https://github.com/TDeepanshPandey/Drug_Screen_Analyzer/blob/main/screenshot/generate_graphs.png)
+![Screenshot](https://github.com/TDeepanshPandey/Drug_Screen_Analyzer/blob/main/screenshot/drugB.png)
 
 ### Display GR Values
 
