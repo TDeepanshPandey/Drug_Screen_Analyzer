@@ -1,6 +1,6 @@
 # custom_plot_functions.R
 
-customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = TRUE, curves = TRUE, plotly = FALSE) {
+customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = TRUE, curves = TRUE, plotly = FALSE, line_thickness = 1.5, legend_size = 12, point_size = 3) {
   if (!points & !curves) {
     stop("You must show either points, curves, or both.")
   }
@@ -81,11 +81,13 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
     
     if (curves) {
       p <- p + ggplot2::geom_line(data = curve_data_all, 
-                                  ggplot2::aes(x = log10(Concentration), y = GR, colour = experiment))
+                                  ggplot2::aes(x = log10(Concentration), y = GR, colour = experiment),
+                                  size = line_thickness)
     }
     if (points) {
       p <- p + ggplot2::geom_point(data = data, 
-                                   ggplot2::aes(x = log10_concentration, y = GRvalue, colour = experiment))
+                                  ggplot2::aes(x = log10_concentration, y = GRvalue, colour = experiment),
+                                  size = point_size)
     }
     
     p <- p + ggplot2::coord_cartesian(xlim = c(log10(min_conc) - 0.1, log10(max_conc) + 0.1), ylim = c(-1, 1.5), expand = TRUE) +
@@ -93,17 +95,22 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
       ggplot2::xlab("Concentration (log10 scale)") +
       ggplot2::ylab("GR value") +
       ggplot2::labs(colour = "") +
-      ggplot2::geom_hline(yintercept = c(1, 0.5, 0, -1), size = 0.25)
+      ggplot2::geom_hline(yintercept = c(1, 0.5, 0, -1), size = 0.25) +
+      ggplot2::theme(legend.text = ggplot2::element_text(size = legend_size),
+                    legend.title = ggplot2::element_text(size = legend_size),
+                    legend.key.size = ggplot2::unit(1.2, "lines"))
   } else if (metric %in% c("rel_cell", "IC")) {
     p <- ggplot2::ggplot()
     
     if (curves) {
       p <- p + ggplot2::geom_line(data = curve_data_all, 
-                                  ggplot2::aes(x = log10(Concentration), y = rel_cell_count, colour = experiment))
+                                  ggplot2::aes(x = log10(Concentration), y = rel_cell_count, colour = experiment),
+                                  size = line_thickness)
     }
     if (points) {
       p <- p + ggplot2::geom_point(data = data, 
-                                   ggplot2::aes(x = log10_concentration, y = rel_cell_count, colour = experiment))
+                                  ggplot2::aes(x = log10_concentration, y = rel_cell_count, colour = experiment),
+                                  size = point_size)
     }
     
     p <- p + ggplot2::coord_cartesian(xlim = c(log10(min_conc) - 0.1, log10(max_conc) + 0.1), ylim = c(0, 1.5), expand = TRUE) +
@@ -111,7 +118,10 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
       ggplot2::xlab("Concentration (log10 scale)") +
       ggplot2::ylab("Relative cell count") +
       ggplot2::labs(colour = "") +
-      ggplot2::geom_hline(yintercept = c(1, 0.5, 0), size = 0.25)
+      ggplot2::geom_hline(yintercept = c(1, 0.5, 0), size = 0.25) +
+      ggplot2::theme(legend.text = ggplot2::element_text(size = legend_size),
+                    legend.title = ggplot2::element_text(size = legend_size),
+                    legend.key.size = ggplot2::unit(1.2, "lines"))
   }
   
   if (plotly) {
