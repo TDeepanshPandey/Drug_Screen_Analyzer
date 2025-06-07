@@ -110,7 +110,7 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
       if (show_mean_only) {
         p <- p + ggplot2::geom_point(data = plot_data, 
                                     ggplot2::aes(x = log10_concentration, y = GRvalue, colour = experiment),
-                                    size = point_size + 1, shape = 8)  # Larger asterisk for mean points
+                                    size = point_size + 1, shape = 16)  # Changed to circle (shape 16) for mean points
       }
     }
     
@@ -140,7 +140,7 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
       if (show_mean_only) {
         p <- p + ggplot2::geom_point(data = plot_data, 
                                     ggplot2::aes(x = log10_concentration, y = rel_cell_count, colour = experiment),
-                                    size = point_size + 1, shape = 8)  # Larger asterisk for mean points
+                                    size = point_size + 1, shape = 16)  # Changed to circle (shape 16) for mean points
       }
     }
     
