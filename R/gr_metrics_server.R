@@ -156,6 +156,7 @@ tab1_server <- function(input, output, session, global_state) {
     selected_agents <- input$selected_agents_graph
     selected_cell_lines <- input$selected_cell_lines_graph
     output_dir <- input$output_folder_directory
+    show_mean_only <- input$show_mean_only
     
     # Show progress during generation
     withProgress(message = 'Generating individual graphs...', value = 0, {
@@ -174,13 +175,20 @@ tab1_server <- function(input, output, session, global_state) {
           # Filter data based on selected agents and cell lines
           filtered_df <- rv$data[rv$data$agent %in% sel_agent & rv$data$cell_line %in% selected_cell_lines, ]
           agent_drc <- GRfit(filtered_df, groupingVariables = c('cell_line', 'agent'))
-          p <- customPlotGR(agent_drc)
+          
+          # Pass the show_mean_only parameter to the plotting function
+          p <- customPlotGR(agent_drc, show_mean_only = show_mean_only)
           
           # Create filename with agent and selected cell lines
           filename_suffix <- if(length(selected_cell_lines) < length(unique(rv$data$cell_line))) {
             paste0("_", paste(selected_cell_lines, collapse="_"))
           } else {
             ""  # If all cell lines are selected, don't add suffix
+          }
+          
+          # Add mean indicator to filename if showing means only
+          if(show_mean_only) {
+            filename_suffix <- paste0(filename_suffix, "_mean")
           }
           
           # Save individual plot
@@ -219,6 +227,7 @@ tab1_server <- function(input, output, session, global_state) {
     selected_agents <- input$selected_agents_graph
     selected_cell_lines <- input$selected_cell_lines_graph
     output_dir <- input$output_folder_directory
+    show_mean_only <- input$show_mean_only
     
     # Filter data based on selected agents and cell lines
     filtered_df <- rv$data[rv$data$agent %in% selected_agents & rv$data$cell_line %in% selected_cell_lines, ]
@@ -230,7 +239,9 @@ tab1_server <- function(input, output, session, global_state) {
         }
         # Fit the model for all selected agents and cell lines
         drc <- GRfit(filtered_df, groupingVariables = c('cell_line', 'agent'))
-        p <- customPlotGR(drc)
+        
+        # Pass the show_mean_only parameter to the plotting function
+        p <- customPlotGR(drc, show_mean_only = show_mean_only)
         
         # Create filename with selected agents and cell lines
         filename_prefix <- paste(selected_agents, collapse="_")
@@ -238,6 +249,11 @@ tab1_server <- function(input, output, session, global_state) {
           paste0("_", paste(selected_cell_lines, collapse="_"))
         } else {
           ""  # If all cell lines are selected, don't add suffix
+        }
+        
+        # Add mean indicator to filename if showing means only
+        if(show_mean_only) {
+          filename_suffix <- paste0(filename_suffix, "_mean")
         }
         
         # Save the combined plot

@@ -41,6 +41,7 @@ tab1_ui <- function(id) {
               downloadButton(ns("download_files"), "Download Files")
       ),
       tabPanel("Generate Graph",
+              checkboxInput(ns("show_mean_only"), "Show Mean Values Only", value = FALSE),
               uiOutput(ns("agent_selector_graph")),  # Dynamic UI for agent selection
               uiOutput(ns("cell_line_selector_graph")),  # Dynamic UI for cell line selection
               actionButton(ns("generate_individual_graphs"), "Generate Individual Treatment Graphs"),

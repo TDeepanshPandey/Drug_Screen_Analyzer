@@ -1,6 +1,6 @@
 # custom_plot_functions.R
 
-customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = TRUE, curves = TRUE, plotly = FALSE, line_thickness = 1.5, legend_size = 12, point_size = 3) {
+customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = TRUE, curves = TRUE, plotly = FALSE, line_thickness = 1.5, legend_size = 12, point_size = 3, show_mean_only = FALSE) {
   if (!points & !curves) {
     stop("You must show either points, curves, or both.")
   }
@@ -20,6 +20,23 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
   if (!identical(experiments, "all")) {
     parameterTable <- parameterTable[parameterTable$experiment %in% experiments, ]
     data <- data[data$experiment %in% experiments, ]
+  }
+  
+  # Calculate mean values if show_mean_only is TRUE
+  if (show_mean_only && points) {
+    # For GR values
+    mean_data <- aggregate(
+      cbind(GRvalue, rel_cell_count) ~ concentration + experiment, 
+      data = data, 
+      FUN = mean, 
+      na.rm = TRUE
+    )
+    mean_data$log10_concentration <- log10(mean_data$concentration)
+    
+    # Replace original data with mean data for plotting
+    plot_data <- mean_data
+  } else {
+    plot_data <- data
   }
   
   exps <- unique(parameterTable$experiment)
@@ -85,9 +102,16 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
                                   size = line_thickness)
     }
     if (points) {
-      p <- p + ggplot2::geom_point(data = data, 
+      p <- p + ggplot2::geom_point(data = plot_data, 
                                   ggplot2::aes(x = log10_concentration, y = GRvalue, colour = experiment),
                                   size = point_size)
+      
+      # Add error bars if using mean values
+      if (show_mean_only) {
+        p <- p + ggplot2::geom_point(data = plot_data, 
+                                    ggplot2::aes(x = log10_concentration, y = GRvalue, colour = experiment),
+                                    size = point_size + 1, shape = 8)  # Larger asterisk for mean points
+      }
     }
     
     p <- p + ggplot2::coord_cartesian(xlim = c(log10(min_conc) - 0.1, log10(max_conc) + 0.1), ylim = c(-1, 1.5), expand = TRUE) +
@@ -108,9 +132,16 @@ customPlotGR <- function(fitData, metric = "GR", experiments = "all", points = T
                                   size = line_thickness)
     }
     if (points) {
-      p <- p + ggplot2::geom_point(data = data, 
+      p <- p + ggplot2::geom_point(data = plot_data, 
                                   ggplot2::aes(x = log10_concentration, y = rel_cell_count, colour = experiment),
                                   size = point_size)
+      
+      # Add error bars if using mean values
+      if (show_mean_only) {
+        p <- p + ggplot2::geom_point(data = plot_data, 
+                                    ggplot2::aes(x = log10_concentration, y = rel_cell_count, colour = experiment),
+                                    size = point_size + 1, shape = 8)  # Larger asterisk for mean points
+      }
     }
     
     p <- p + ggplot2::coord_cartesian(xlim = c(log10(min_conc) - 0.1, log10(max_conc) + 0.1), ylim = c(0, 1.5), expand = TRUE) +
